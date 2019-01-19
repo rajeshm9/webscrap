@@ -12,6 +12,7 @@ import re
 import sqlalchemy
 import time
 from bs4 import BeautifulSoup
+import re
 
 
 url="https://www.usatoday.com/"
@@ -49,37 +50,57 @@ def readFromFile(fileName):
         return content_file.read()
 
 
-
-def findallLinks(soup, link, next):
+def pageInfo(url, row):
     
-    d = config['mainlinkConfig'].str.split("|")[0]
+    html_doc = getPageSrc(url)
+    soup = BeautifulSoup(html_doc, 'html.parser')
+    d = row['sublinkTitle'].split("|")
+    try:
+        pageNext = soup.find(d[0], {d[1]: d[2]}).get_text()
+        print(pageNext)
+    except:
+         pageNext = None
+    
+def findallLinks(soup, row):
+    
+    d = row['mainlinkConfig'].split("|")
     for a in soup.find_all(d[0], {d[1]: d[2]}):
-        print(a.get('href'))
+        sublink =(a.get('href'))
+        break    
+    
+    if re.match('^http', sublink) == None:
+        sublink = row['baseUrl'] + sublink
         
-        
-    d = config['mainlinkNextConfig'].str.split("|")[0]
+    pageInfo(sublink, row)
+    
+    d = row['mainlinkNextConfig'].split("|")
     try:
         pageNext = soup.find(d[0], {d[1]: d[2]}).find("a").get('href')
         print(pageNext)
     except:
          pageNext = None
+
     
 '''    
 html_doc = getPageSrc(url)
 file = open("tt.html", "w")
 file.write(html_doc)
 file.close()
+html_doc = readFromFile('tt.html')
 '''
 
-html_doc = readFromFile('tt.html')
-
-soup = BeautifulSoup(html_doc, 'html.parser')
-
-
-next = dict()
-
+for index,row in config.iterrows():
+    print("Fetching Information for "+row['url'])
+    
+    html_doc = getPageSrc(row['url'])
+    soup = BeautifulSoup(html_doc, 'html.parser')
+    findallLinks(soup, row)
+    
+    #pageInfo("https://www.naukri.com/job-listings-Openings-For-Devops-Engineer-ILABZ-TECHNOLOGY-LLP-Bengaluru-3-to-7-years-180119006856?src=jobsearchDesk&sid=15479157197114&xp=41&px=1", row)
+exit(0)   
 #findallLinks (soup, "a", "id", "jdUrl", "0")
-findallLinks (soup, link, "0")
+#print(config['url'][0])
+#findallLinks (soup)
 #findallLinks(soup, "a", "class", "js-asset-link", 0)
 #findallLinks(soup, "a", "itemprop", "name codeRepository", 0)
 
