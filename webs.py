@@ -29,9 +29,10 @@ TAG POS=1 TYPE=BUTTON ATTR=TXT:Next
 '''
 
 conn = sqlalchemy.create_engine('mysql+pymysql://root:raj#123@localhost/webscrap')
-config = pd.read_sql_query("select * from config", conn) 
+                                
+                                
+config = pd.read_sql_query("select * from config where status='A'", conn) 
 
-print(config)
 
 options = Options()
 #options.set_headless(headless=True)
@@ -43,6 +44,11 @@ def getPageSrc (url):
     
     src =  driver.page_source
     driver.close()
+    
+    file = open("debug.html", "w")
+    file.write(src)
+    file.close()
+    
     return src
 
 def readFromFile(fileName):
@@ -56,18 +62,25 @@ def pageInfo(url, row):
     soup = BeautifulSoup(html_doc, 'html.parser')
     d = row['sublinkTitle'].split("|")
     try:
-        pageNext = soup.find(d[0], {d[1]: d[2]}).get_text()
-        print(pageNext)
+        sublinkTitle = soup.find(d[0], {d[1]: d[2]}).get_text()
+        print(sublinkTitle)
     except:
-         pageNext = None
+         sublinkTitle = None
     
 def findallLinks(soup, row):
     
     d = row['mainlinkConfig'].split("|")
-    for a in soup.find_all(d[0], {d[1]: d[2]}):
-        sublink =(a.get('href'))
-        break    
-    
+    if d[0] == 'a':
+        for a in soup.find_all(d[0], {d[1]: d[2]}):
+            sublink =(a.get('href'))
+            print(sublink)
+            break    
+    else:
+        for a in soup.find_all(d[0], {d[1]: d[2]}):
+            sublink =(a.find('a').get('href'))
+            print(sublink)
+            break 
+        
     if re.match('^http', sublink) == None:
         sublink = row['baseUrl'] + sublink
         
