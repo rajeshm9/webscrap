@@ -109,7 +109,6 @@ for index,row in config.iterrows():
     soup = BeautifulSoup(html_doc, 'html.parser')
     findallLinks(soup, row)
     
-    #pageInfo("https://www.naukri.com/job-listings-Openings-For-Devops-Engineer-ILABZ-TECHNOLOGY-LLP-Bengaluru-3-to-7-years-180119006856?src=jobsearchDesk&sid=15479157197114&xp=41&px=1", row)
 exit(0)   
 #findallLinks (soup, "a", "id", "jdUrl", "0")
 #print(config['url'][0])
